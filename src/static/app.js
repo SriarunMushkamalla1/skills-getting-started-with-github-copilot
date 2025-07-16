@@ -84,3 +84,46 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize app
   fetchActivities();
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadActivities();
+});
+
+async function loadActivities() {
+  const res = await fetch('/activities');
+  const activities = await res.json();
+  const list = document.getElementById('activities-list');
+  list.innerHTML = '';
+  Object.entries(activities).forEach(([name, info]) => {
+    const card = document.createElement('div');
+    card.className = 'activity-card';
+    card.innerHTML = `
+      <h4>${name}</h4>
+      <p>${info.description}</p>
+      <p><strong>Schedule:</strong> ${info.schedule}</p>
+      <p><strong>Max Participants:</strong> ${info.max_participants}</p>
+      <div class="participants-section">
+        <strong>Participants:</strong>
+        <ul class="participants-list">
+          ${info.participants && info.participants.length > 0
+            ? info.participants.map(email => `<li>${email}</li>`).join('')
+            : '<li class="no-participants">No participants yet.</li>'}
+        </ul>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  // Populate the select dropdown for activities
+  const select = document.getElementById('activity');
+  if (select) {
+    // Remove old options except the placeholder
+    select.querySelectorAll('option:not([value=""])').forEach(opt => opt.remove());
+    Object.keys(activities).forEach(name => {
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      select.appendChild(option);
+    });
+  }
+}
